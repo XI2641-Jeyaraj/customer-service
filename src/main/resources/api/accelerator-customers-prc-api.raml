@@ -1,0 +1,172 @@
+#%RAML 1.0
+title: Accelerator Customers Process API
+description: Process API for working with customer resources 
+version: v2
+mediaType: application/json
+
+uses: 
+  GlobalResources: ./exchange_modules/org.mule.examples/accelerator-global-resources/2.2.0/accelerator-global-resources.raml
+  MarketTypes: ./exchange_modules/org.mule.examples/accelerator-cim-market-library/1.2.0/accelerator-cim-market-library.raml
+  SellTypes: ./exchange_modules/org.mule.examples/accelerator-cim-sell-library/1.2.0/accelerator-cim-sell-library.raml
+
+securedBy: [ GlobalResources.BasicAuth ]
+
+/ping:
+  get:
+    is: [ GlobalResources.PingResponse ]
+    description: Get the current health status of this API 
+
+/customers:
+  description: Base resource for managing customers.
+  get:
+    description: Find one or more customers by matching one of the criteria supplied. When multiple criteria are provided the precedence order is to match on customer identifier, external identifier, and finally email address.
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable, GlobalResources.Pageable ]
+    queryParameters:
+      customerId?:
+        type: string
+        description: Lookup by customer identifier
+      externalId?:
+        type: string
+        description: Lookup by an external identifier
+      emailAddress?:
+        type: string
+        description: Lookup by email address
+    responses:
+      200:
+        body:
+          application/json:
+            type: MarketTypes.Customer[]
+  put:
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+    description: Process one or more customer profile updates to downstream systems.
+    body:
+      application/json:
+        type: MarketTypes.Customer[]
+    responses: 
+      200:
+        headers:
+          Location:
+            description: Relative URI of a created/updated resource
+            type: string
+            example: "/customers/95830940"
+        body: 
+          application/json:
+            type: GlobalResources.BasicResponse
+
+  /{customerId}:
+    get:
+      is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+      description: Return details for an existing customer.
+      responses:
+        200:
+          body:
+            application/json:
+              type: MarketTypes.Customer
+              
+    /orders:
+      get:
+        is: [ GlobalResources.Trackable, GlobalResources.Pageable, GlobalResources.ErrorResponses ]
+        description: Get order history for a given period for the customer.
+        queryParameters:
+          beginDate?:
+            type: datetime
+            description: Retrieve order history updated on or after this date and time
+          endDate?:
+            type: datetime
+            description: Retrieve order history updated on or before this date and time
+        responses:
+          200:
+            body:
+              application/json:
+                type: SellTypes.SalesOrder[]
+
+/individuals:
+  description: Base resource for managing an Individual party.
+  get:
+    description: Find one or more individuals by matching one of the criteria supplied. When multiple criteria are provided the precedence order is to match on global individual identifier, external identifier, and finally email address.
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable, GlobalResources.Pageable ]
+    queryParameters:
+      individualId?:
+        type: string
+        description: Lookup by global individual identifier
+      externalId?:
+        type: string
+        description: Lookup by an external identifier
+      emailAddress?:
+        type: string
+        description: Lookup by email address
+    responses:
+      200:
+        body:
+          application/json:
+            type: MarketTypes.Individual[]
+  put:
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+    description: Process one or more Individual party updates to downstream systems.
+    body:
+      application/json:
+        type: MarketTypes.Individual[]
+    responses: 
+      200:
+        headers:
+          Location:
+            description: Relative URI of a created/updated resource
+            type: string
+            example: "/individuals/506709"
+        body: 
+          application/json:
+            type: GlobalResources.BasicResponse
+
+  /{individualId}:
+    get:
+      is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+      description: Return details for an existing individual.
+      responses:
+        200:
+          body:
+            application/json:
+              type: MarketTypes.Individual
+
+/organizations:
+  description: Base resource for managing an Organization party.
+  get:
+    description: Find one or more organizations by matching one of the criteria supplied. When multiple criteria are provided the precedence order is to match on global organization identifier and then external identifier.
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable, GlobalResources.Pageable ]
+    queryParameters:
+      organizationId?:
+        type: string
+        description: Lookup by global organization identifier
+      externalId?:
+        type: string
+        description: Lookup by an external identifier
+    responses:
+      200:
+        body:
+          application/json:
+            type: MarketTypes.Organization[]
+  put:
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+    description: Process one or more Organization party updates to downstream systems.
+    body:
+      application/json:
+        type: MarketTypes.Organization[]
+    responses: 
+      200:
+        headers:
+          Location:
+            description: Relative URI of a created/updated resource
+            type: string
+            example: "/organizations/230056"
+        body: 
+          application/json:
+            type: GlobalResources.BasicResponse
+
+  /{organizationId}:
+    get:
+      is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+      description: Return details for an existing organization.
+      responses:
+        200:
+          body:
+            application/json:
+              type: MarketTypes.Organization
